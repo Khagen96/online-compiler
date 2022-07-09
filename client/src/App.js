@@ -7,7 +7,8 @@ function App() {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("cpp");
   const [output,setOutput] = useState("");
-  
+  const [status, setStatus] = useState("");
+  const [jobId, setJobId] = useState("");
 
 
   const handleSubmit = async () =>{
@@ -19,9 +20,13 @@ function App() {
     };
 
     try{
+    setJobId("");
+    setStatus("");
+    setOutput("");
+    
     const {data} = await axios.post("http://localhost:5000/run",payload);
     console.log(data);
-    setOutput(data.jobId);
+    setJobId(data.jobId);
     let intervalId;
     
     intervalId = setInterval( async()=>{
@@ -33,12 +38,15 @@ function App() {
 
       if(success){
         const {status: jobStatus, output: jobOutput } =job;
+        setStatus(jobStatus);
+
         if(jobStatus == "pending") return;
         setOutput(jobOutput);
         clearInterval(intervalId);
 
       }
       else{
+        setStatus("Error: Please retry!");
         console.error(error);
         clearInterval(intervalId);
         setOutput(error);
@@ -95,7 +103,11 @@ function App() {
     }}></textarea>
     <br/>
     <button onClick={handleSubmit}>Submit</button>
+    <p>{status}</p>
+    <p>{jobId && `JobID: ${jobId}`}</p>
+
     <p className="output">{output}</p>
+
     </div>
   );
 }
